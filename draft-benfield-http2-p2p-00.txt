@@ -2,7 +2,7 @@
 
 
 
-Hypertext Transfer Protocol Working GRoup                    C. Benfield
+Hypertext Transfer Protocol Working Group                    C. Benfield
 Internet-Draft                                             July 08, 2015
 Intended status: Standards Track
 Expires: January 9, 2016

@@ -7,7 +7,7 @@ category: std
 
 ipr: trust200902
 area: Applications and Real-Time Area
-workgroup: Hypertext Transfer Protocol Working GRoup
+workgroup: Hypertext Transfer Protocol Working Group
 keyword: Internet-Draft
 
 stand_alone: yes
