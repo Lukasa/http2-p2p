@@ -141,10 +141,17 @@ Internet-Draft                  HTTP2-P2P                      July 2015
    HEADERS frame is considered the 'client' for the remainder of that
    stream, while the other peer is considered the 'server'.
 
-   This definition of 'client' and 'server' is preserved for the
-   purposes of the PUSH_PROMISE frame ([RFC7231], Section 6.6).  As a
-   result, whichever peer is considered the 'server' for a given stream
-   can push other streams to the 'client' peer.
+   Once negotiated, this extension also amends RFC 7540 [RFC7540]
+   section 8.2.  When this extension is in place, clients MUST NOT
+   reject an attempt to change the SETTINGS_ENABLE_PUSH setting to a
+   value other than 0.  Instead, the endpoint's value of
+   SETTINGS_ENABLE_PUSH applies only to streams for which it is the
+   client.
+
+   Otherwise, the new definition of 'client' and 'server' is preserved
+   for the purposes of the PUSH_PROMISE frame ([RFC7231], Section 6.6).
+   As a result, whichever peer is considered the 'server' for a given
+   stream can push other streams to the 'client' peer.
 
    The rest of the requirements of RFC 7231 [RFC7231] are preserved.
 
@@ -153,13 +160,6 @@ Internet-Draft                  HTTP2-P2P                      July 2015
    This document updates the registry for HTTP/2 Settings ([RFC7540],
    Section 11.4).  The entries in the following table are registered by
    this document.
-
-          +--------------+------+---------------+---------------+
-          | Name         | Code | Initial Value | Specification |
-          +--------------+------+---------------+---------------+
-          | PEER_TO_PEER | TBD  | 0             | Section 2.1   |
-          +--------------+------+---------------+---------------+
-
 
 
 
@@ -170,10 +170,16 @@ Benfield                 Expires January 9, 2016                [Page 3]
 Internet-Draft                  HTTP2-P2P                      July 2015
 
 
+          +--------------+------+---------------+---------------+
+          | Name         | Code | Initial Value | Specification |
+          +--------------+------+---------------+---------------+
+          | PEER_TO_PEER | TBD  | 0             | Section 2.1   |
+          +--------------+------+---------------+---------------+
+
 4.  Acknowledgements
 
-   Thanks to Fedor Indutny for the original idea, and Amos Jeffries and
-   Mike Bishop for their follow-up.
+   Thanks to Fedor Indutny for the original idea, and Amos Jeffries,
+   Mike Bishop, and Ilari Liusvaara for their follow-up.
 
    Thanks also to Tyrel Souza for proofreading.
 
@@ -193,12 +199,6 @@ Author's Address
    Cory Benfield
 
    Email: cory@lukasa.co.uk
-
-
-
-
-
-
 
 
 

@@ -107,10 +107,16 @@ by a HEADERS frame, the peer that sent the HEADERS frame is considered the
 ‘client’ for the remainder of that stream, while the other peer is considered
 the ‘server’.</t>
 
-<t>This definition of ‘client’ and ‘server’ is preserved for the purposes of the
-PUSH_PROMISE frame (<xref target="RFC7231"/>, Section 6.6). As a result, whichever peer is
-considered the ‘server’ for a given stream can push other streams to the
-‘client’ peer.</t>
+<t>Once negotiated, this extension also amends RFC 7540 <xref target="RFC7540"/> section 8.2.
+When this extension is in place, clients MUST NOT reject an attempt to change
+the SETTINGS_ENABLE_PUSH setting to a value other than 0. Instead, the
+endpoint’s value of SETTINGS_ENABLE_PUSH applies only to streams for which it
+is the client.</t>
+
+<t>Otherwise, the new definition of ‘client’ and ‘server’ is preserved for the
+purposes of the PUSH_PROMISE frame (<xref target="RFC7231"/>, Section 6.6). As a result,
+whichever peer is considered the ‘server’ for a given stream can push other
+streams to the ‘client’ peer.</t>
 
 <t>The rest of the requirements of RFC 7231 <xref target="RFC7231"/> are preserved.</t>
 
@@ -135,8 +141,8 @@ considered the ‘server’ for a given stream can push other streams to the
 </section>
 <section anchor="acknowledgements" title="Acknowledgements">
 
-<t>Thanks to Fedor Indutny for the original idea, and Amos Jeffries and Mike
-Bishop for their follow-up.</t>
+<t>Thanks to Fedor Indutny for the original idea, and Amos Jeffries, Mike Bishop,
+and Ilari Liusvaara for their follow-up.</t>
 
 <t>Thanks also to Tyrel Souza for proofreading.</t>
 
