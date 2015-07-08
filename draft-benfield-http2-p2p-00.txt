@@ -1,0 +1,224 @@
+
+
+
+
+Hypertext Transfer Protocol Working GRoup                    C. Benfield
+Internet-Draft                                             July 08, 2015
+Intended status: Standards Track
+Expires: January 9, 2016
+
+
+                    Peer-to-peer Extension to HTTP/2
+                      draft-benfield-http2-p2p-00
+
+Abstract
+
+   This document introduces a negotiated extension to HTTP/2 that turns
+   a single HTTP/2 connection into a bi-directional communication
+   channel.
+
+Status of This Memo
+
+   This Internet-Draft is submitted in full conformance with the
+   provisions of BCP 78 and BCP 79.
+
+   Internet-Drafts are working documents of the Internet Engineering
+   Task Force (IETF).  Note that other groups may also distribute
+   working documents as Internet-Drafts.  The list of current Internet-
+   Drafts is at http://datatracker.ietf.org/drafts/current/.
+
+   Internet-Drafts are draft documents valid for a maximum of six months
+   and may be updated, replaced, or obsoleted by other documents at any
+   time.  It is inappropriate to use Internet-Drafts as reference
+   material or to cite them other than as "work in progress."
+
+   This Internet-Draft will expire on January 9, 2016.
+
+Copyright Notice
+
+   Copyright (c) 2015 IETF Trust and the persons identified as the
+   document authors.  All rights reserved.
+
+   This document is subject to BCP 78 and the IETF Trust's Legal
+   Provisions Relating to IETF Documents
+   (http://trustee.ietf.org/license-info) in effect on the date of
+   publication of this document.  Please review these documents
+   carefully, as they describe your rights and restrictions with respect
+   to this document.  Code Components extracted from this document must
+   include Simplified BSD License text as described in Section 4.e of
+   the Trust Legal Provisions and are provided without warranty as
+   described in the Simplified BSD License.
+
+
+
+
+
+Benfield                 Expires January 9, 2016                [Page 1]
+
+Internet-Draft                  HTTP2-P2P                      July 2015
+
+
+Table of Contents
+
+   1.  Introduction  . . . . . . . . . . . . . . . . . . . . . . . .   2
+     1.1.  Notational Conventions  . . . . . . . . . . . . . . . . .   2
+   2.  Additions to HTTP/2 . . . . . . . . . . . . . . . . . . . . .   2
+     2.1.  SETTINGS_PEER_TO_PEER Setting . . . . . . . . . . . . . .   3
+     2.2.  Behavioral Changes  . . . . . . . . . . . . . . . . . . .   3
+   3.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .   3
+   4.  Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .   4
+   5.  Normative References  . . . . . . . . . . . . . . . . . . . .   4
+   Author's Address  . . . . . . . . . . . . . . . . . . . . . . . .   4
+
+1.  Introduction
+
+   The HTTP/2 [RFC7540] specification provides an alternative framing
+   layer for the semantics of HTTP/1.1 [RFC7231].  This framing layer in
+   principle allows for both parties in a HTTP/2 session to send
+   requests and responses.  However, the HTTP/2 specification als
+   requires that the semantics of HTTP/1.1 be preserved.  This means
+   that one party of the conversation is considered the client, and one
+   the server.  Only the client may send requests, and only the server
+   may send responses.
+
+   This document introduces an extension that can be negotiated during a
+   HTTP/2 conversation by the means of SETTINGS frames, that allows both
+   the client and the server to send requests and responses.
+   Essentially, this extension changes the protocol such that the notion
+   of 'client' and 'server' are defined on a per-stream basis, rather
+   than a per-connection basis.
+
+1.1.  Notational Conventions
+
+   The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+   "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this
+   document are to be interpreted as described in RFC 2119 [RFC2119].
+
+2.  Additions to HTTP/2
+
+   This document introduces a new HTTP/2 setting ([RFC7540],
+   Section 11.3), to allow for the negotiation of a peer-to-peer HTTP/2
+   connection.  This setting, SETTINGS_PEER_TO_PEER, is a negotiated
+   setting ([RFC7540], Section 5.5).
+
+   Before using this extension, both the client and the server must emit
+   SETTINGS frames ([RFC7540], Section 6.5) that have the value for
+   SETTINGS_PEER_TO_PEER set to 1, and have those SETTINGS frames
+   acknowledged.  If either party does not emit this setting, this
+   extension MUST NOT be used.
+
+
+
+Benfield                 Expires January 9, 2016                [Page 2]
+
+Internet-Draft                  HTTP2-P2P                      July 2015
+
+
+2.1.  SETTINGS_PEER_TO_PEER Setting
+
+   The following new SETTINGS parameter ([RFC7540], Section 6.5.2) is
+   defined:
+
+   o  SETTINGS_PEER_TO_PEER (0xTBA): Informs the remote endpoint of
+      whether the sender supports the peer-to-peer extension to HTTP/2.
+      A value of 1 indicates that the peer-to-peer extension is
+      supported.  Any other value, or the absence of this setting,
+      indicates that the peer-to-peer extension is not supported.
+
+2.2.  Behavioral Changes
+
+   If both parties emit the SETTINGS_PEER_TO_PEER setting with a value
+   of 1, and have that setting acknowledged, the peer-to-peer extension
+   is now in effect.  This limits some of the restrictions of RFC 7540
+   [RFC7540] Section 8.  Specifically, both parties of a HTTP/2
+   connection MAY begin a stream with a HEADERS frame corresponding to a
+   request, regardless of whether they are the server or the client.
+
+   From the perspective of RFC 7231 [RFC7231], the only difference is
+   that whether a peer is considered a 'client' or a 'server' is
+   determined on a per-stream basis, instead of a per-connection basis.
+   If a stream is initiated by a HEADERS frame, the peer that sent the
+   HEADERS frame is considered the 'client' for the remainder of that
+   stream, while the other peer is considered the 'server'.
+
+   This definition of 'client' and 'server' is preserved for the
+   purposes of the PUSH_PROMISE frame ([RFC7231], Section 6.6).  As a
+   result, whichever peer is considered the 'server' for a given stream
+   can push other streams to the 'client' peer.
+
+   The rest of the requirements of RFC 7231 [RFC7231] are preserved.
+
+3.  IANA Considerations
+
+   This document updates the registry for HTTP/2 Settings ([RFC7540],
+   Section 11.4).  The entries in the following table are registered by
+   this document.
+
+          +--------------+------+---------------+---------------+
+          | Name         | Code | Initial Value | Specification |
+          +--------------+------+---------------+---------------+
+          | PEER_TO_PEER | TBD  | 0             | Section 2.1   |
+          +--------------+------+---------------+---------------+
+
+
+
+
+
+
+Benfield                 Expires January 9, 2016                [Page 3]
+
+Internet-Draft                  HTTP2-P2P                      July 2015
+
+
+4.  Acknowledgements
+
+   Thanks to Fedor Indutny for the original idea, and Amos Jeffries and
+   Mike Bishop for their follow-up.
+
+5.  Normative References
+
+   [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
+              Requirement Levels", BCP 14, RFC 2119, March 1997.
+
+   [RFC7231]  Fielding, R. and J. Reschke, "Hypertext Transfer Protocol
+              (HTTP/1.1): Semantics and Content", RFC 7231, June 2014.
+
+   [RFC7540]  Belshe, M., Peon, R., and M. Thomson, "Hypertext Transfer
+              Protocol Version 2 (HTTP/2)", RFC 7540, May 2015.
+
+Author's Address
+
+   Cory Benfield
+
+   Email: cory@lukasa.co.uk
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Benfield                 Expires January 9, 2016                [Page 4]
