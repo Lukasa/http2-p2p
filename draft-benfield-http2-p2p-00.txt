@@ -75,7 +75,7 @@ Table of Contents
    The HTTP/2 [RFC7540] specification provides an alternative framing
    layer for the semantics of HTTP/1.1 [RFC7231].  This framing layer in
    principle allows for both parties in a HTTP/2 session to send
-   requests and responses.  However, the HTTP/2 specification als
+   requests and responses.  However, the HTTP/2 specification also
    requires that the semantics of HTTP/1.1 be preserved.  This means
    that one party of the conversation is considered the client, and one
    the server.  Only the client may send requests, and only the server
@@ -175,6 +175,8 @@ Internet-Draft                  HTTP2-P2P                      July 2015
    Thanks to Fedor Indutny for the original idea, and Amos Jeffries and
    Mike Bishop for their follow-up.
 
+   Thanks also to Tyrel Souza for proofreading.
+
 5.  Normative References
 
    [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
@@ -191,8 +193,6 @@ Author's Address
    Cory Benfield
 
    Email: cory@lukasa.co.uk
-
-
 
 
 
