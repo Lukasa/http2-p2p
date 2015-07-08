@@ -95,7 +95,7 @@ of this setting, indicates that the peer-to-peer extension is not supported.</t>
 
 <t>If both parties emit the SETTINGS_PEER_TO_PEER setting with a value of 1, and
 have that setting acknowledged, the peer-to-peer extension is now in effect.
-This limits some of the restrictions of RFC 7540 <xref target="RFC7540"/> Section 8.
+This lifts some of the restrictions of RFC 7540 <xref target="RFC7540"/> Section 8.
 Specifically, both parties of a HTTP/2 connection MAY begin a stream with a
 HEADERS frame corresponding to a request, regardless of whether they are the
 server or the client.</t>
