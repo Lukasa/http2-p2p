@@ -121,6 +121,18 @@ streams to the ‘client’ peer.</t>
 <t>The rest of the requirements of RFC 7231 <xref target="RFC7231"/> are preserved.</t>
 
 </section>
+<section anchor="other-extensions" title="Other Extensions">
+
+<t>When this extension is deployed with other extensions to HTTP/2, the behaviour
+of this extension does not change. All other extensions that refer to ‘client’
+or ‘server’ should be treated as though those terms apply on a per-stream
+basis.</t>
+
+<t>If other extensions apply ‘server’ or ‘client’ to the whole connection (e.g.
+for settings in SETTINGS frames, which are sent on stream 0), then both peers
+should be considered clients and both peers should be considered servers.</t>
+
+</section>
 </section>
 <section anchor="iana-considerations" title="IANA Considerations">
 

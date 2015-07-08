@@ -65,7 +65,8 @@ Table of Contents
    2.  Additions to HTTP/2 . . . . . . . . . . . . . . . . . . . . .   2
      2.1.  SETTINGS_PEER_TO_PEER Setting . . . . . . . . . . . . . .   3
      2.2.  Behavioral Changes  . . . . . . . . . . . . . . . . . . .   3
-   3.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .   3
+     2.3.  Other Extensions  . . . . . . . . . . . . . . . . . . . .   4
+   3.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .   4
    4.  Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .   4
    5.  Normative References  . . . . . . . . . . . . . . . . . . . .   4
    Author's Address  . . . . . . . . . . . . . . . . . . . . . . . .   4
@@ -104,8 +105,7 @@ Table of Contents
    Before using this extension, both the client and the server must emit
    SETTINGS frames ([RFC7540], Section 6.5) that have the value for
    SETTINGS_PEER_TO_PEER set to 1, and have those SETTINGS frames
-   acknowledged.  If either party does not emit this setting, this
-   extension MUST NOT be used.
+
 
 
 
@@ -113,6 +113,9 @@ Benfield                 Expires January 9, 2016                [Page 2]
 
 Internet-Draft                  HTTP2-P2P                      July 2015
 
+
+   acknowledged.  If either party does not emit this setting, this
+   extension MUST NOT be used.
 
 2.1.  SETTINGS_PEER_TO_PEER Setting
 
@@ -155,11 +158,8 @@ Internet-Draft                  HTTP2-P2P                      July 2015
 
    The rest of the requirements of RFC 7231 [RFC7231] are preserved.
 
-3.  IANA Considerations
 
-   This document updates the registry for HTTP/2 Settings ([RFC7540],
-   Section 11.4).  The entries in the following table are registered by
-   this document.
+
 
 
 
@@ -169,6 +169,24 @@ Benfield                 Expires January 9, 2016                [Page 3]
 
 Internet-Draft                  HTTP2-P2P                      July 2015
 
+
+2.3.  Other Extensions
+
+   When this extension is deployed with other extensions to HTTP/2, the
+   behaviour of this extension does not change.  All other extensions
+   that refer to 'client' or 'server' should be treated as though those
+   terms apply on a per-stream basis.
+
+   If other extensions apply 'server' or 'client' to the whole
+   connection (e.g.  for settings in SETTINGS frames, which are sent on
+   stream 0), then both peers should be considered clients and both
+   peers should be considered servers.
+
+3.  IANA Considerations
+
+   This document updates the registry for HTTP/2 Settings ([RFC7540],
+   Section 11.4).  The entries in the following table are registered by
+   this document.
 
           +--------------+------+---------------+---------------+
           | Name         | Code | Initial Value | Specification |
@@ -199,24 +217,6 @@ Author's Address
    Cory Benfield
 
    Email: cory@lukasa.co.uk
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
