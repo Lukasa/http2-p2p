@@ -23,6 +23,8 @@ normative:
   RFC7540:
   RFC7231:
   RFC2119:
+informative:
+  I-D.draft-lentczner-rhttp-00:
 
 
 --- abstract
@@ -49,6 +51,12 @@ conversation by the means of SETTINGS frames, that allows both the client and
 the server to send requests and responses. Essentially, this extension changes
 the protocol such that the notion of 'client' and 'server' are defined on a
 per-stream basis, rather than a per-connection basis.
+
+The principle of this extension is similar to the Reverse HTTP
+{{I-D.lentczner-rhttp}} proposal made in 2009. HTTP/2's framing makes
+this a substantially more flexible extension than Reverse HTTP by allowing the
+client and server to vary on a per-stream basis, rather than affecting the
+whole connection.
 
 Notational Conventions
 ----------------------
@@ -115,12 +123,12 @@ Other Extensions
 
 When this extension is deployed with other extensions to HTTP/2, the behaviour
 of this extension does not change. All other extensions that refer to 'client'
-or 'server' should be treated as though those terms apply on a per-stream
+or 'server' SHOULD be treated as though those terms apply on a per-stream
 basis.
 
 If other extensions apply 'server' or 'client' to the whole connection (e.g.
 for settings in SETTINGS frames, which are sent on stream 0), then both peers
-should be considered clients and both peers should be considered servers.
+SHOULD be considered clients and both peers should be considered servers.
 
 IANA Considerations
 ===================
@@ -138,4 +146,7 @@ Acknowledgements
 Thanks to Fedor Indutny for the original idea, and Amos Jeffries, Mike Bishop,
 and Ilari Liusvaara for their follow-up.
 
-Thanks also to Tyrel Souza for proofreading.
+Thanks also to Tyrel Souza, Donald Stufft, and Paul Kehrer for proofreading.
+
+Thanks to David Reid for pointing out the Reverse HTTP proposal
+{{I-D.lentczner-rhttp}}.

@@ -60,6 +60,12 @@ the server to send requests and responses. Essentially, this extension changes
 the protocol such that the notion of ‘client’ and ‘server’ are defined on a
 per-stream basis, rather than a per-connection basis.</t>
 
+<t>The principle of this extension is similar to the Reverse HTTP
+<xref target="I-D.lentczner-rhttp"/> proposal made in 2009. HTTP/2’s framing makes
+this a substantially more flexible extension than Reverse HTTP by allowing the
+client and server to vary on a per-stream basis, rather than affecting the
+whole connection.</t>
+
 <section anchor="notational-conventions" title="Notational Conventions">
 
 <t>The key words “MUST”, “MUST NOT”, “REQUIRED”, “SHALL”, “SHALL NOT”,
@@ -125,12 +131,12 @@ streams to the ‘client’ peer.</t>
 
 <t>When this extension is deployed with other extensions to HTTP/2, the behaviour
 of this extension does not change. All other extensions that refer to ‘client’
-or ‘server’ should be treated as though those terms apply on a per-stream
+or ‘server’ SHOULD be treated as though those terms apply on a per-stream
 basis.</t>
 
 <t>If other extensions apply ‘server’ or ‘client’ to the whole connection (e.g.
 for settings in SETTINGS frames, which are sent on stream 0), then both peers
-should be considered clients and both peers should be considered servers.</t>
+SHOULD be considered clients and both peers should be considered servers.</t>
 
 </section>
 </section>
@@ -156,7 +162,10 @@ should be considered clients and both peers should be considered servers.</t>
 <t>Thanks to Fedor Indutny for the original idea, and Amos Jeffries, Mike Bishop,
 and Ilari Liusvaara for their follow-up.</t>
 
-<t>Thanks also to Tyrel Souza for proofreading.</t>
+<t>Thanks also to Tyrel Souza, Donald Stufft, and Paul Kehrer for proofreading.</t>
+
+<t>Thanks to David Reid for pointing out the Reverse HTTP proposal
+<xref target="I-D.lentczner-rhttp"/>.</t>
 
 </section>
 
@@ -257,6 +266,39 @@ and Ilari Liusvaara for their follow-up.</t>
 
     </references>
 
+    <references title='Informative References'>
+
+
+
+
+
+<reference anchor='I-D.lentczner-rhttp'>
+<front>
+<title>Reverse HTTP</title>
+
+<author initials='M' surname='Lentczner' fullname='Mark Lentczner'>
+    <organization />
+</author>
+
+<author initials='D' surname='Preston' fullname='Donovan Preston'>
+    <organization />
+</author>
+
+<date month='March' day='4' year='2009' />
+
+<abstract><t>This memo explains a method for making HTTP requests to a host that cannot be contacted directly.  Typically, such a host is behind a firewall and/or a network address translation system.</t></abstract>
+
+</front>
+
+<seriesInfo name='Internet-Draft' value='draft-lentczner-rhttp-00' />
+<format type='TXT'
+        target='http://www.ietf.org/internet-drafts/draft-lentczner-rhttp-00.txt' />
+</reference>
+
+
+
+
+    </references>
 
 
 
