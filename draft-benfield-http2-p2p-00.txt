@@ -102,7 +102,7 @@ Table of Contents
    connection.  This setting, SETTINGS_PEER_TO_PEER, is a negotiated
    setting ([RFC7540], Section 5.5).
 
-   Before using this extension, both the client and the server must emit
+   Before using this extension, both the client and the server MUST emit
    SETTINGS frames ([RFC7540], Section 6.5) that have the value for
    SETTINGS_PEER_TO_PEER set to 1, and have those SETTINGS frames
 

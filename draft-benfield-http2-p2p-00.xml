@@ -74,7 +74,7 @@ document are to be interpreted as described in RFC 2119 <xref target="RFC2119"/>
 allow for the negotiation of a peer-to-peer HTTP/2 connection. This setting,
 SETTINGS_PEER_TO_PEER, is a negotiated setting (<xref target="RFC7540"/>, Section 5.5).</t>
 
-<t>Before using this extension, both the client and the server must emit SETTINGS
+<t>Before using this extension, both the client and the server MUST emit SETTINGS
 frames (<xref target="RFC7540"/>, Section 6.5) that have the value for SETTINGS_PEER_TO_PEER
 set to 1, and have those SETTINGS frames acknowledged. If either party does not
 emit this setting, this extension MUST NOT be used.</t>
