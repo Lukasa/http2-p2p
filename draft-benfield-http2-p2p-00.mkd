@@ -46,11 +46,11 @@ preserved. This means that one party of the conversation is considered the
 client, and one the server. Only the client may send requests, and only the
 server may send responses.
 
-This document introduces an extension that can be negotiated during a HTTP/2
-conversation by the means of SETTINGS frames, that allows both the client and
-the server to send requests and responses. Essentially, this extension changes
-the protocol such that the notion of 'client' and 'server' are defined on a
-per-stream basis, rather than a per-connection basis.
+This document introduces an extension that can be advertised by a HTTP/2
+client. This extension allows both the client and the server to send requests
+and responses. Essentially, this extension changes the protocol such that the
+notion of 'client' and 'server' are defined on a per-stream basis, rather than
+a per-connection basis.
 
 The principle of this extension is similar to the Reverse HTTP
 {{I-D.lentczner-rhttp}} proposal made in 2009. HTTP/2's framing makes
@@ -69,54 +69,124 @@ document are to be interpreted as described in RFC 2119 {{RFC2119}}.
 Additions to HTTP/2   {#additions}
 ===================
 
-This document introduces a new HTTP/2 setting ({{RFC7540}}, Section 11.3), to
-allow for the negotiation of a peer-to-peer HTTP/2 connection. This setting,
-SETTINGS_PEER_TO_PEER, is a negotiated setting ({{RFC7540}}, Section 5.5).
+This document introduces a new HTTP/2 setting ({{RFC7540}}, Section 11.3) and a
+new HTTP/2 frame type ({{RFC7540}}, Section 11.2), to allow for a HTTP/2 client
+to advertise its support for receiving server-initiated streams, and to allow a
+server to advertise its support for receiving client-initiated pushed streams.
 
-Before using this extension, both the client and the server MUST emit SETTINGS
-frames ({{RFC7540}}, Section 6.5) that have the value for SETTINGS_PEER_TO_PEER
-set to 1, and have those SETTINGS frames acknowledged. If either party does not
-emit this setting, this extension MUST NOT be used.
+The setting, SETTINGS_PEER_TO_PEER, is a negotiated setting ({{RFC7540}},
+Section 5.5).
 
-SETTINGS_PEER_TO_PEER Setting
+SETTINGS_PEER_TO_PEER Setting    {#p2p-setting}
 -----------------------------
 
-The following new SETTINGS parameter ({{RFC7540}}, Section 6.5.2) is defined:
+The following new SETTINGS parameters ({{RFC7540}}, Section 6.5.2) are defined:
 
 * SETTINGS_PEER_TO_PEER (0xTBA): Informs the remote endpoint of whether the
   sender supports the peer-to-peer extension to HTTP/2. A value of 1 indicates
   that the peer-to-peer extension is supported. Any other value, or the absence
   of this setting, indicates that the peer-to-peer extension is not supported.
 
-Behavioral Changes
-------------------
+CLIENT_AUTHORITY Frame    {#client-authority-frame}
+----------------------
 
-If both parties emit the SETTINGS_PEER_TO_PEER setting with a value of 1, and
-have that setting acknowledged, the peer-to-peer extension is now in effect.
-This lifts some of the restrictions of RFC 7540 {{RFC7540}} Section 8.
-Specifically, both parties of a HTTP/2 connection MAY begin a stream with a
-HEADERS frame corresponding to a request, regardless of whether they are the
-server or the client.
+This document introduces the CLIENT_AUTHORITY frame. This frame MUST be emitted
+by a client after it sends a value of SETTINGS_PEER_TO_PEER of 1. The purpose
+of this frame is to allow a client to advertise the authority or authorities
+for which it is prepared to accept requests.
 
-From the perspective of RFC 7231 {{RFC7231}}, the only difference is that
-whether a peer is considered a 'client' or a 'server' is determined on a
-per-stream basis, instead of a per-connection basis. If a stream is initiated
-by a HEADERS frame, the peer that sent the HEADERS frame is considered the
-'client' for the remainder of that stream, while the other peer is considered
-the 'server'.
+This frame always applies to a whole connection. Therefore, the stream
+identifier for CLIENT_AUTHORITY frames MUST be 0. If a server receives a
+CLIENT_AUTHORITY frame whose stream identifier field is anything other than 0,
+it MUST respond with a connection error ({{RFC7540}} Section 5.4.1) of type
+PROTOCOL_ERROR.
 
-Once negotiated, this extension also amends RFC 7540 {{RFC7540}} section 8.2.
-When this extension is in place, clients MUST NOT reject an attempt to change
-the SETTINGS_ENABLE_PUSH setting to a value other than 0. Instead, the
-endpoint's value of SETTINGS_ENABLE_PUSH applies only to streams for which it
-is the client.
+### Payload
+
+Each CLIENT_AUTHORITY frame is made up of one or more of the following
+authority segments:
+
+~~~~~~~~~~~
+    +----------------------+
+    | Authority Length (8) |
+    +----------------------+----------------------------------+
+    |                      Authority (*)                      |
+    +---------------------------------------------------------+
+~~~~~~~~~~~
+{: #client-authority-frame-fig title="Client Authority Frame Payload" }
+
+
+Each segment begins with a one-byte field indicating the length of the
+authority string the client is asserting. That field is then followed by a
+single authority field. The authority MUST be sent in whatever character
+encoding is going to be expected by the client on receipt of the :authority
+pseudo-header field.
+
+### Semantics
+
+Generally speaking, a server or coalescing intermediary has no in-band method
+of validating that a client's authority claims are valid. Therefore, a
+conforming server MUST confirm a client's authority claims using some
+out-of-band method: see {{authority-validation}} for more.
+
+HTTP Changes
+------------
+
+From the perspective of other HTTP RFCs, such as RFC 7231 {{RFC7231}} and
+RFC 7540 {{RFC7540}}, this extension changes whether a peer is considered a
+'client' or a 'server' on a per-stream basis, instead of a per-connection
+basis, based on which peer opened the stream and how they did so. If a stream
+is initiated by a HEADERS frame, the peer that sent the HEADERS frame is
+considered the 'client' for the remainder of the lifetime of that stream, while
+the other peer is considered the 'server'.
 
 Otherwise, the new definition of 'client' and 'server' is preserved for the
-purposes of the PUSH_PROMISE frame ({{RFC7231}}, Section 6.6). As a result,
+purposes of the PUSH_PROMISE frame ({{RFC7540}}, Section 6.6). As a result,
 whichever peer is considered the 'server' for a given stream can push other
 streams to the 'client' peer.
 
 The rest of the requirements of RFC 7231 {{RFC7231}} are preserved.
+
+Client Behavioral Changes
+-------------------------
+
+When a client emits the SETTINGS_PEER_TO_PEER setting with a value of 1, it is
+informing the server that it is willing to accept HTTP requests from the
+server, allowing the server to open streams with HEADERS frames. This lifts
+some of the restrictions of RFC 7540 {{RFC7540}} Section 8.
+
+If a client has sent the SETTINGS_PEER_TO_PEER setting with a value of 1, and
+the server has also sent SETTINGS_PEER_TO_PEER with a value of 1, the client
+MUST NOT reject an attempt by the server to change the value of
+SETTINGS_ENABLE_PUSH to 1.
+
+If the client receives from the server a value of SETTINGS_PEER_TO_PEER of 1,
+it MAY open streams by sending PUSH_PROMISE frames. The client MUST NOT send a
+PUSH_PROMISE frame on a stream that it opened by means of a HEADERS frame: only
+server-initiated streams may be used for sending PUSH_PROMISE frames. All other
+limitations about PUSH_PROMISE frames in RFC 7540 {{RFC7540}} continue to
+apply, except that the words 'server' and 'client' are defined on a per-stream
+basis.
+
+Server Behavioral Changes
+-------------------------
+
+When a server emits the SETTINGS_PEER_TO_PEER setting with a value of 1, it is
+informing the client that it is willing to accept pushed responses from the
+client. This allows clients to open streams with PUSH_PROMISE frames. This also
+lifts some of the restrictions of RFC 7540 {{RFC7540}} Section 8: specifically
+those sections that only allow servers to send PUSH_PROMISE frames, and only
+allow clients to receive them.
+
+Once a server issues this setting, it MAY also issue a non-zero value for
+SETTINGS_ENABLE_PUSH. A server MUST NOT emit that setting unless the client has
+also sent SETTINGS_PEER_TO_PEER with a value of 1, as clients that do not
+implement this extension are likely to reject the attempt to change the
+setting, as per RFC 7540 {{RFC7540}} Section 8.2.
+
+If the client attempts to send a PUSH_PROMISE frame on a stream that was opened
+by the client (by sending a HEADERS frame), the server MUST treat this event as
+a connection error ({{RFC7540}} Section 5.4.1) of type PROTOCOL_ERROR.
 
 Other Extensions
 ----------------
@@ -130,15 +200,51 @@ If other extensions apply 'server' or 'client' to the whole connection (e.g.
 for settings in SETTINGS frames, which are sent on stream 0), then both peers
 SHOULD be considered clients and both peers should be considered servers.
 
+Authority Validation    {#authority-validation}
+====================
+
+Generally speaking, a server or coalescing intermediary has no in-band method
+of validating that a client's authority claims are valid. Therefore, a
+conforming server MUST confirm a client's authority claims using some
+out-of-band method.
+
+This specification does not lay out in detail any proposed mechanism for doing
+this validation, as the best approach may vary from deployment to deployment.
+However, some options include:
+
+- validating authorities against a TLS certificate presented by the client
+  during TLS handshake.
+- confirming that a reverse DNS lookup for the client IP returns the authority
+  asserted by the client.
+- a static list of IP addresses trusted for a given authority.
+
+The only requirement is that a server MUST implement some form of validation,
+and then MUST treat any attempt by a client to assert an authority that it
+cannot validate as a connection error ({{RFC7540}} Section 5.4.1) of type
+PROTOCOL_ERROR.
+
 IANA Considerations
 ===================
+
+HTTP/2 Frame Type Registry Update
+---------------------------------
+
+This document updates the HTTP/2 Frame Type registry ({{RFC7540}}, Section
+11.2).  The entries in the following table are registered by this document.
+
+| Name             | Code | Section                    |
+|------------------+------+----------------------------|
+| CLIENT_AUTHORITY | TBD  | {{client-authority-frame}} |
+
+HTTP/2 Settings Registry Update
+-------------------------------
 
 This document updates the registry for HTTP/2 Settings ({{RFC7540}}, Section
 11.4). The entries in the following table are registered by this document.
 
-| Name         | Code | Initial Value | Specification |
-|--------------+------+---------------+---------------|
-| PEER_TO_PEER | TBD  | 0             | Section 2.1   |
+| Name         | Code | Initial Value | Section         |
+|--------------+------+---------------+-----------------|
+| PEER_TO_PEER | TBD  | 0             | {{p2p-setting}} |
 
 Acknowledgements
 ================
@@ -150,3 +256,6 @@ Thanks also to Tyrel Souza, Donald Stufft, and Paul Kehrer for proofreading.
 
 Thanks to David Reid for pointing out the Reverse HTTP proposal
 {{I-D.lentczner-rhttp}}.
+
+Thanks to Amos Jeffries for proposing an advertised extension, rather than a
+negotiated one.
