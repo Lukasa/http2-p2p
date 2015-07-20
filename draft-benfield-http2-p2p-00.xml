@@ -21,7 +21,7 @@
       </address>
     </author>
 
-    <date year="2015" month="July" day="08"/>
+    <date year="2015" month="July" day="20"/>
 
     <area>Applications and Real-Time Area</area>
     <workgroup>Hypertext Transfer Protocol Working Group</workgroup>
@@ -310,6 +310,7 @@ negotiated one.</t>
 </reference>
 
 
+
 <reference  anchor='RFC7231' target='http://www.rfc-editor.org/info/rfc7231'>
 <front>
 <title>Hypertext Transfer Protocol (HTTP/1.1): Semantics and Content</title>
@@ -323,6 +324,7 @@ negotiated one.</t>
 </reference>
 
 
+
 <reference  anchor='RFC2119' target='http://www.rfc-editor.org/info/rfc2119'>
 <front>
 <title>Key words for use in RFCs to Indicate Requirement Levels</title>
@@ -334,6 +336,7 @@ negotiated one.</t>
 <seriesInfo name='RFC' value='2119'/>
 <seriesInfo name='DOI' value='10.17487/RFC2119'/>
 </reference>
+
 
 
 

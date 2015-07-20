@@ -3,9 +3,9 @@
 
 
 Hypertext Transfer Protocol Working Group                    C. Benfield
-Internet-Draft                                             July 08, 2015
+Internet-Draft                                             July 20, 2015
 Intended status: Standards Track
-Expires: January 9, 2016
+Expires: January 21, 2016
 
 
                     Peer-to-peer Extension to HTTP/2
@@ -32,7 +32,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on January 9, 2016.
+   This Internet-Draft will expire on January 21, 2016.
 
 Copyright Notice
 
@@ -53,7 +53,7 @@ Copyright Notice
 
 
 
-Benfield                 Expires January 9, 2016                [Page 1]
+Benfield                Expires January 21, 2016                [Page 1]
 
 Internet-Draft                  HTTP2-P2P                      July 2015
 
@@ -109,7 +109,7 @@ Table of Contents
 
 
 
-Benfield                 Expires January 9, 2016                [Page 2]
+Benfield                Expires January 21, 2016                [Page 2]
 
 Internet-Draft                  HTTP2-P2P                      July 2015
 
@@ -165,7 +165,7 @@ Internet-Draft                  HTTP2-P2P                      July 2015
 
 
 
-Benfield                 Expires January 9, 2016                [Page 3]
+Benfield                Expires January 21, 2016                [Page 3]
 
 Internet-Draft                  HTTP2-P2P                      July 2015
 
@@ -221,7 +221,7 @@ Internet-Draft                  HTTP2-P2P                      July 2015
 
 
 
-Benfield                 Expires January 9, 2016                [Page 4]
+Benfield                Expires January 21, 2016                [Page 4]
 
 Internet-Draft                  HTTP2-P2P                      July 2015
 
@@ -277,7 +277,7 @@ Internet-Draft                  HTTP2-P2P                      July 2015
 
 
 
-Benfield                 Expires January 9, 2016                [Page 5]
+Benfield                Expires January 21, 2016                [Page 5]
 
 Internet-Draft                  HTTP2-P2P                      July 2015
 
@@ -333,7 +333,7 @@ Internet-Draft                  HTTP2-P2P                      July 2015
 
 
 
-Benfield                 Expires January 9, 2016                [Page 6]
+Benfield                Expires January 21, 2016                [Page 6]
 
 Internet-Draft                  HTTP2-P2P                      July 2015
 
@@ -389,7 +389,7 @@ Internet-Draft                  HTTP2-P2P                      July 2015
 
 
 
-Benfield                 Expires January 9, 2016                [Page 7]
+Benfield                Expires January 21, 2016                [Page 7]
 
 Internet-Draft                  HTTP2-P2P                      July 2015
 
@@ -445,4 +445,4 @@ Author's Address
 
 
 
-Benfield                 Expires January 9, 2016                [Page 8]
+Benfield                Expires January 21, 2016                [Page 8]

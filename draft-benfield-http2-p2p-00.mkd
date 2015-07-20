@@ -2,7 +2,7 @@
 title: Peer-to-peer Extension to HTTP/2
 abbrev: HTTP2-P2P
 docname: draft-benfield-http2-p2p-00
-date: 2015-07-08
+date: 2015-07-20
 category: std
 
 ipr: trust200902
