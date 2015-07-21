@@ -129,6 +129,13 @@ of validating that a client's authority claims are valid. Therefore, a
 conforming server MUST confirm a client's authority claims using some
 out-of-band method: see {{authority-validation}} for more.
 
+A client MAY send a CLIENT_AUTHORITY frame at any time after the HTTP/2
+preamble is complete. Each CLIENT_AUTHORITY frame is considered to be a
+complete list of authorities: therefore, a server MUST disregard all prior
+CLIENT_AUTHORITY frames when a new one is received. Also, servers MUST validate
+the asserted authorities for all CLIENT_AUTHORITY frames, not just the first
+one.
+
 HTTP Changes
 ------------
 
@@ -259,3 +266,14 @@ Thanks to David Reid for pointing out the Reverse HTTP proposal
 
 Thanks to Amos Jeffries for proposing an advertised extension, rather than a
 negotiated one.
+
+--- back
+
+Changelog
+=========
+
+(This appendix to be deleted by the RFC Editor.)
+
+Since -00:
+
+- Clarified the semantics behind multiple CLIENT_AUTHORITY frames.
