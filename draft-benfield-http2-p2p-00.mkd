@@ -87,13 +87,18 @@ The following new SETTINGS parameters ({{RFC7540}}, Section 6.5.2) are defined:
   that the peer-to-peer extension is supported. Any other value, or the absence
   of this setting, indicates that the peer-to-peer extension is not supported.
 
+  This setting MUST NOT be emitted by the server on the HTTP/2 connection. If
+  the client receives this setting from the server it MUST respond with a
+  connection error ({{RFC7540}} Section 5.4.1) of type PROTOCOL_ERROR.
+
 CLIENT_AUTHORITY Frame    {#client-authority-frame}
 ----------------------
 
 This document introduces the CLIENT_AUTHORITY frame. This frame MUST be emitted
-by a client after it sends a value of SETTINGS_PEER_TO_PEER of 1. The purpose
-of this frame is to allow a client to advertise the authority or authorities
-for which it is prepared to accept requests.
+by a client after it sends a value of SETTINGS_PEER_TO_PEER of 1, and MAY be
+emitted by a client any time after. The purpose of this frame is to allow a
+client to advertise the authority or authorities for which it is prepared to
+accept requests.
 
 This frame always applies to a whole connection. Therefore, the stream
 identifier for CLIENT_AUTHORITY frames MUST be 0. If a server receives a
@@ -162,13 +167,13 @@ informing the server that it is willing to accept HTTP requests from the
 server, allowing the server to open streams with HEADERS frames. This lifts
 some of the restrictions of RFC 7540 {{RFC7540}} Section 8.
 
-If a client has sent the SETTINGS_PEER_TO_PEER setting with a value of 1, and
-the server has also sent SETTINGS_PEER_TO_PEER with a value of 1, the client
-MUST NOT reject an attempt by the server to change the value of
+If a client has sent the SETTINGS_PEER_TO_PEER setting with a value of 1, the
+client MUST NOT reject an attempt by the server to change the value of
 SETTINGS_ENABLE_PUSH to 1.
 
-If the client receives from the server a value of SETTINGS_PEER_TO_PEER of 1,
-it MAY open streams by sending PUSH_PROMISE frames. The client MUST NOT send a
+If the client, subsequent to sending SETTINGS_PEER_TO_PEER with value 1,
+receives from the server a value of SETTINGS_ENABLE_PUSH of 1, it MAY open
+streams by sending PUSH_PROMISE frames. The client MUST NOT send a
 PUSH_PROMISE frame on a stream that it opened by means of a HEADERS frame: only
 server-initiated streams may be used for sending PUSH_PROMISE frames. All other
 limitations about PUSH_PROMISE frames in RFC 7540 {{RFC7540}} continue to
@@ -178,18 +183,12 @@ basis.
 Server Behavioral Changes
 -------------------------
 
-When a server emits the SETTINGS_PEER_TO_PEER setting with a value of 1, it is
-informing the client that it is willing to accept pushed responses from the
-client. This allows clients to open streams with PUSH_PROMISE frames. This also
-lifts some of the restrictions of RFC 7540 {{RFC7540}} Section 8: specifically
-those sections that only allow servers to send PUSH_PROMISE frames, and only
-allow clients to receive them.
-
-Once a server issues this setting, it MAY also issue a non-zero value for
-SETTINGS_ENABLE_PUSH. A server MUST NOT emit that setting unless the client has
-also sent SETTINGS_PEER_TO_PEER with a value of 1, as clients that do not
-implement this extension are likely to reject the attempt to change the
-setting, as per RFC 7540 {{RFC7540}} Section 8.2.
+When a server receives the SETTINGS_PEER_TO_PEER setting from the client with
+a value of 1, it MAY at any point afterwards issue a non-zero value for
+SETTINGS_ENABLE_PUSH. This allows clients to open streams with PUSH_PROMISE
+and also lifts some of the restrictions of RFC 7540 {{RFC7540}} Section 8:
+specifically those sections that only allow servers to send PUSH_PROMISE
+frames, and only allow clients to receive them.
 
 If the client attempts to send a PUSH_PROMISE frame on a stream that was opened
 by the client (by sending a HEADERS frame), the server MUST treat this event as
@@ -277,3 +276,5 @@ Changelog
 Since -00:
 
 - Clarified the semantics behind multiple CLIENT_AUTHORITY frames.
+- Removed the requirement for servers to issue SETTINGS_PEER_TO_PEER, instead
+  allowing the extension to be purely client-advertised.
