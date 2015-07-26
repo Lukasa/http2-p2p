@@ -3,13 +3,13 @@
 
 
 Hypertext Transfer Protocol Working Group                    C. Benfield
-Internet-Draft                                             July 20, 2015
+Internet-Draft                                             July 26, 2015
 Intended status: Standards Track
-Expires: January 21, 2016
+Expires: January 27, 2016
 
 
                     Peer-to-peer Extension to HTTP/2
-                      draft-benfield-http2-p2p-00
+                      draft-benfield-http2-p2p-01
 
 Abstract
 
@@ -32,7 +32,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on January 21, 2016.
+   This Internet-Draft will expire on January 27, 2016.
 
 Copyright Notice
 
@@ -53,7 +53,7 @@ Copyright Notice
 
 
 
-Benfield                Expires January 21, 2016                [Page 1]
+Benfield                Expires January 27, 2016                [Page 1]
 
 Internet-Draft                  HTTP2-P2P                      July 2015
 
@@ -65,10 +65,10 @@ Table of Contents
    2.  Additions to HTTP/2 . . . . . . . . . . . . . . . . . . . . .   3
      2.1.  SETTINGS_PEER_TO_PEER Setting . . . . . . . . . . . . . .   3
      2.2.  CLIENT_AUTHORITY Frame  . . . . . . . . . . . . . . . . .   3
-       2.2.1.  Payload . . . . . . . . . . . . . . . . . . . . . . .   3
+       2.2.1.  Payload . . . . . . . . . . . . . . . . . . . . . . .   4
        2.2.2.  Semantics . . . . . . . . . . . . . . . . . . . . . .   4
      2.3.  HTTP Changes  . . . . . . . . . . . . . . . . . . . . . .   4
-     2.4.  Client Behavioral Changes . . . . . . . . . . . . . . . .   4
+     2.4.  Client Behavioral Changes . . . . . . . . . . . . . . . .   5
      2.5.  Server Behavioral Changes . . . . . . . . . . . . . . . .   5
      2.6.  Other Extensions  . . . . . . . . . . . . . . . . . . . .   5
    3.  Authority Validation  . . . . . . . . . . . . . . . . . . . .   6
@@ -79,6 +79,7 @@ Table of Contents
    6.  References  . . . . . . . . . . . . . . . . . . . . . . . . .   7
      6.1.  Normative References  . . . . . . . . . . . . . . . . . .   7
      6.2.  Informative References  . . . . . . . . . . . . . . . . .   7
+   Appendix A.  Changelog  . . . . . . . . . . . . . . . . . . . . .   8
    Author's Address  . . . . . . . . . . . . . . . . . . . . . . . .   8
 
 1.  Introduction
@@ -108,8 +109,7 @@ Table of Contents
 
 
 
-
-Benfield                Expires January 21, 2016                [Page 2]
+Benfield                Expires January 27, 2016                [Page 2]
 
 Internet-Draft                  HTTP2-P2P                      July 2015
 
@@ -142,13 +142,19 @@ Internet-Draft                  HTTP2-P2P                      July 2015
       supported.  Any other value, or the absence of this setting,
       indicates that the peer-to-peer extension is not supported.
 
+      This setting MUST NOT be emitted by the server on the HTTP/2
+      connection.  If the client receives this setting from the server
+      it MUST respond with a connection error ([RFC7540] Section 5.4.1)
+      of type PROTOCOL_ERROR.
+
 2.2.  CLIENT_AUTHORITY Frame
 
    This document introduces the CLIENT_AUTHORITY frame.  This frame MUST
    be emitted by a client after it sends a value of
-   SETTINGS_PEER_TO_PEER of 1.  The purpose of this frame is to allow a
-   client to advertise the authority or authorities for which it is
-   prepared to accept requests.
+   SETTINGS_PEER_TO_PEER of 1, and MAY be emitted by a client any time
+   after.  The purpose of this frame is to allow a client to advertise
+   the authority or authorities for which it is prepared to accept
+   requests.
 
    This frame always applies to a whole connection.  Therefore, the
    stream identifier for CLIENT_AUTHORITY frames MUST be 0.  If a server
@@ -156,19 +162,18 @@ Internet-Draft                  HTTP2-P2P                      July 2015
    anything other than 0, it MUST respond with a connection error
    ([RFC7540] Section 5.4.1) of type PROTOCOL_ERROR.
 
+
+
+
+Benfield                Expires January 27, 2016                [Page 3]
+
+Internet-Draft                  HTTP2-P2P                      July 2015
+
+
 2.2.1.  Payload
 
    Each CLIENT_AUTHORITY frame is made up of one or more of the
    following authority segments:
-
-
-
-
-
-Benfield                Expires January 21, 2016                [Page 3]
-
-Internet-Draft                  HTTP2-P2P                      July 2015
-
 
        +----------------------+
        | Authority Length (8) |
@@ -191,6 +196,13 @@ Internet-Draft                  HTTP2-P2P                      July 2015
    Therefore, a conforming server MUST confirm a client's authority
    claims using some out-of-band method: see Section 3 for more.
 
+   A client MAY send a CLIENT_AUTHORITY frame at any time after the
+   HTTP/2 preamble is complete.  Each CLIENT_AUTHORITY frame is
+   considered to be a complete list of authorities: therefore, a server
+   MUST disregard all prior CLIENT_AUTHORITY frames when a new one is
+   received.  Also, servers MUST validate the asserted authorities for
+   all CLIENT_AUTHORITY frames, not just the first one.
+
 2.3.  HTTP Changes
 
    From the perspective of other HTTP RFCs, such as RFC 7231 [RFC7231]
@@ -207,6 +219,13 @@ Internet-Draft                  HTTP2-P2P                      July 2015
    As a result, whichever peer is considered the 'server' for a given
    stream can push other streams to the 'client' peer.
 
+
+
+Benfield                Expires January 27, 2016                [Page 4]
+
+Internet-Draft                  HTTP2-P2P                      July 2015
+
+
    The rest of the requirements of RFC 7231 [RFC7231] are preserved.
 
 2.4.  Client Behavioral Changes
@@ -217,44 +236,28 @@ Internet-Draft                  HTTP2-P2P                      July 2015
    HEADERS frames.  This lifts some of the restrictions of RFC 7540
    [RFC7540] Section 8.
 
-
-
-
-
-Benfield                Expires January 21, 2016                [Page 4]
-
-Internet-Draft                  HTTP2-P2P                      July 2015
-
-
    If a client has sent the SETTINGS_PEER_TO_PEER setting with a value
-   of 1, and the server has also sent SETTINGS_PEER_TO_PEER with a value
    of 1, the client MUST NOT reject an attempt by the server to change
    the value of SETTINGS_ENABLE_PUSH to 1.
 
-   If the client receives from the server a value of
-   SETTINGS_PEER_TO_PEER of 1, it MAY open streams by sending
-   PUSH_PROMISE frames.  The client MUST NOT send a PUSH_PROMISE frame
-   on a stream that it opened by means of a HEADERS frame: only server-
-   initiated streams may be used for sending PUSH_PROMISE frames.  All
-   other limitations about PUSH_PROMISE frames in RFC 7540 [RFC7540]
-   continue to apply, except that the words 'server' and 'client' are
-   defined on a per-stream basis.
+   If the client, subsequent to sending SETTINGS_PEER_TO_PEER with value
+   1, receives from the server a value of SETTINGS_ENABLE_PUSH of 1, it
+   MAY open streams by sending PUSH_PROMISE frames.  The client MUST NOT
+   send a PUSH_PROMISE frame on a stream that it opened by means of a
+   HEADERS frame: only server-initiated streams may be used for sending
+   PUSH_PROMISE frames.  All other limitations about PUSH_PROMISE frames
+   in RFC 7540 [RFC7540] continue to apply, except that the words
+   'server' and 'client' are defined on a per-stream basis.
 
 2.5.  Server Behavioral Changes
 
-   When a server emits the SETTINGS_PEER_TO_PEER setting with a value of
-   1, it is informing the client that it is willing to accept pushed
-   responses from the client.  This allows clients to open streams with
-   PUSH_PROMISE frames.  This also lifts some of the restrictions of RFC
-   7540 [RFC7540] Section 8: specifically those sections that only allow
-   servers to send PUSH_PROMISE frames, and only allow clients to
+   When a server receives the SETTINGS_PEER_TO_PEER setting from the
+   client with a value of 1, it MAY at any point afterwards issue a non-
+   zero value for SETTINGS_ENABLE_PUSH.  This allows clients to open
+   streams with PUSH_PROMISE and also lifts some of the restrictions of
+   RFC 7540 [RFC7540] Section 8: specifically those sections that only
+   allow servers to send PUSH_PROMISE frames, and only allow clients to
    receive them.
-
-   Once a server issues this setting, it MAY also issue a non-zero value
-   for SETTINGS_ENABLE_PUSH.  A server MUST NOT emit that setting unless
-   the client has also sent SETTINGS_PEER_TO_PEER with a value of 1, as
-   clients that do not implement this extension are likely to reject the
-   attempt to change the setting, as per RFC 7540 [RFC7540] Section 8.2.
 
    If the client attempts to send a PUSH_PROMISE frame on a stream that
    was opened by the client (by sending a HEADERS frame), the server
@@ -270,17 +273,17 @@ Internet-Draft                  HTTP2-P2P                      July 2015
 
    If other extensions apply 'server' or 'client' to the whole
    connection (e.g.  for settings in SETTINGS frames, which are sent on
-   stream 0), then both peers SHOULD be considered clients and both
-   peers should be considered servers.
 
 
 
 
-
-Benfield                Expires January 21, 2016                [Page 5]
+Benfield                Expires January 27, 2016                [Page 5]
 
 Internet-Draft                  HTTP2-P2P                      July 2015
 
+
+   stream 0), then both peers SHOULD be considered clients and both
+   peers should be considered servers.
 
 3.  Authority Validation
 
@@ -330,10 +333,7 @@ Internet-Draft                  HTTP2-P2P                      July 2015
 
 
 
-
-
-
-Benfield                Expires January 21, 2016                [Page 6]
+Benfield                Expires January 27, 2016                [Page 6]
 
 Internet-Draft                  HTTP2-P2P                      July 2015
 
@@ -389,10 +389,22 @@ Internet-Draft                  HTTP2-P2P                      July 2015
 
 
 
-Benfield                Expires January 21, 2016                [Page 7]
+Benfield                Expires January 27, 2016                [Page 7]
 
 Internet-Draft                  HTTP2-P2P                      July 2015
 
+
+Appendix A.  Changelog
+
+   (This appendix to be deleted by the RFC Editor.)
+
+   Since -00:
+
+   o  Clarified the semantics behind multiple CLIENT_AUTHORITY frames.
+
+   o  Removed the requirement for servers to issue
+      SETTINGS_PEER_TO_PEER, instead allowing the extension to be purely
+      client-advertised.
 
 Author's Address
 
@@ -433,16 +445,4 @@ Author's Address
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-Benfield                Expires January 21, 2016                [Page 8]
+Benfield                Expires January 27, 2016                [Page 8]
