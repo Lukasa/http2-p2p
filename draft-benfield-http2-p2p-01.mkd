@@ -150,11 +150,6 @@ is initiated by a HEADERS frame, the peer that sent the HEADERS frame is
 considered the 'client' for the remainder of the lifetime of that stream, while
 the other peer is considered the 'server'.
 
-Otherwise, the new definition of 'client' and 'server' is preserved for the
-purposes of the PUSH_PROMISE frame ({{RFC7540}}, Section 6.6). As a result,
-whichever peer is considered the 'server' for a given stream can push other
-streams to the 'client' peer.
-
 The rest of the requirements of RFC 7231 {{RFC7231}} are preserved.
 
 Client Behavioral Changes
@@ -191,6 +186,12 @@ frames, and only allow clients to receive them.
 If the client attempts to send a PUSH_PROMISE frame on a stream that was opened
 by the client (by sending a HEADERS frame), the server MUST treat this event as
 a connection error ({{RFC7540}} Section 5.4.1) of type PROTOCOL_ERROR.
+
+A HTTP/2 server, before sending SETTINGS_PEER_TO_PEER, must have
+SETTINGS_ENABLE_PUSH equal to 0, as per {{RFC7540}} Section 8.2. However, once
+a server has sent SETTINGS_PEER_TO_PEER, it MAY set SETTINGS_ENABLE_PUSH equal
+to 1. If it does not, it is assumed that SETTINGS_ENABLE_PUSH remains at 0,
+and the server is unwilling to accept pushed streams.
 
 Other Extensions
 ----------------
