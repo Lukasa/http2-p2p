@@ -255,8 +255,8 @@ This document updates the registry for HTTP/2 Settings ({{RFC7540}}, Section
 Acknowledgements
 ================
 
-Thanks to Fedor Indutny for the original idea, and Amos Jeffries, Mike Bishop,
-and Ilari Liusvaara for their follow-up.
+Thanks to David Dias, Juan Benet, and Fedor Indutny for the original idea, and
+Amos Jeffries, Mike Bishop, and Ilari Liusvaara for their follow-up.
 
 Thanks also to Tyrel Souza, Donald Stufft, and Paul Kehrer for proofreading.
 
