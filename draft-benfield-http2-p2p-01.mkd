@@ -95,8 +95,8 @@ CLIENT_AUTHORITY Frame    {#client-authority-frame}
 ----------------------
 
 This document introduces the CLIENT_AUTHORITY frame. This frame MUST be emitted
-by a client after it sends a value of SETTINGS_PEER_TO_PEER of 1, and MAY be
-emitted by a client any time after. The purpose of this frame is to allow a
+by a client after it sends a value of SETTINGS_PEER_TO_PEER of 1, and MUST NOT
+be emitted by a client any time after. The purpose of this frame is to allow a
 client to advertise the authority or authorities for which it is prepared to
 accept requests.
 
@@ -134,12 +134,10 @@ of validating that a client's authority claims are valid. Therefore, a
 conforming server MUST confirm a client's authority claims using some
 out-of-band method: see {{authority-validation}} for more.
 
-A client MAY send a CLIENT_AUTHORITY frame at any time after the HTTP/2
-preamble is complete. Each CLIENT_AUTHORITY frame is considered to be a
-complete list of authorities: therefore, a server MUST disregard all prior
-CLIENT_AUTHORITY frames when a new one is received. Also, servers MUST validate
-the asserted authorities for all CLIENT_AUTHORITY frames, not just the first
-one.
+A client MUST NOT send a CLIENT_AUTHORITY frame after the first. The
+CLIENT_AUTHORITY frame is considered to be a complete list of authorities:
+therefore, a client MUST start a new connection if it would like to change the
+list of authorities it claims.
 
 HTTP Changes
 ------------
