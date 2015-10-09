@@ -65,14 +65,33 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
 "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this
 document are to be interpreted as described in RFC 2119 {{RFC2119}}.
 
+Terminology
+-----------
+
+The nature of this specification is that which peer is a 'client' and which is
+a 'server' changes from stream-to-stream. Therefore, the terms 'listener' and
+'dialer' are introduced to unambiguously refer to peers.
+
+The 'dialer', or dialing peer, is the peer that initiated the HTTP/2
+connection. In a standard, non-peer-to-peer HTTP/2 transaction, the 'dialer'
+and the 'client' are the same.
+
+The 'listener', or listening peer, is the peer that accepted the HTTP/2
+connection. In a standard, non-peer-to-peer HTTP/2 transaction, the 'listener'
+and the 'server' are the same.
+
+'Client' and 'server' are defined on a per-stream basis, following the rules in
+{{client-and-server}}.
+
 
 Additions to HTTP/2   {#additions}
 ===================
 
 This document introduces a new HTTP/2 setting ({{RFC7540}}, Section 11.3) and a
-new HTTP/2 frame type ({{RFC7540}}, Section 11.2), to allow for a HTTP/2 client
+new HTTP/2 frame type ({{RFC7540}}, Section 11.2), to allow for a HTTP/2 dialer
 to advertise its support for receiving server-initiated streams, and to allow a
-server to advertise its support for receiving client-initiated pushed streams.
+listener to advertise its support for receiving client-initiated pushed
+streams.
 
 The setting, SETTINGS_PEER_TO_PEER, is a negotiated setting ({{RFC7540}},
 Section 5.5).
@@ -88,20 +107,20 @@ The following new SETTINGS parameters ({{RFC7540}}, Section 6.5.2) are defined:
   of this setting, indicates that the peer-to-peer extension is not supported.
 
   This setting MUST NOT be emitted by the server on the HTTP/2 connection. If
-  the client receives this setting from the server it MUST respond with a
+  the dialer receives this setting from the server it MUST respond with a
   connection error ({{RFC7540}} Section 5.4.1) of type PROTOCOL_ERROR.
 
 CLIENT_AUTHORITY Frame    {#client-authority-frame}
 ----------------------
 
 This document introduces the CLIENT_AUTHORITY frame. This frame MUST be emitted
-by a client after it sends a value of SETTINGS_PEER_TO_PEER of 1, and MUST NOT
-be emitted by a client any time after. The purpose of this frame is to allow a
-client to advertise the authority or authorities for which it is prepared to
+by a dialer after it sends a value of SETTINGS_PEER_TO_PEER of 1, and MUST NOT
+be emitted by a dialer any time after. The purpose of this frame is to allow a
+dialer to advertise the authority or authorities for which it is prepared to
 accept requests.
 
 This frame always applies to a whole connection. Therefore, the stream
-identifier for CLIENT_AUTHORITY frames MUST be 0. If a server receives a
+identifier for CLIENT_AUTHORITY frames MUST be 0. If a listener receives a
 CLIENT_AUTHORITY frame whose stream identifier field is anything other than 0,
 it MUST respond with a connection error ({{RFC7540}} Section 5.4.1) of type
 PROTOCOL_ERROR.
@@ -124,19 +143,19 @@ authority segments:
 Each segment begins with a one-byte field indicating the length of the
 authority string the client is asserting. That field is then followed by a
 single authority field. The authority MUST be sent in whatever character
-encoding is going to be expected by the client on receipt of the :authority
+encoding is going to be expected by the dialer on receipt of the :authority
 pseudo-header field.
 
 ### Semantics
 
-Generally speaking, a server or coalescing intermediary has no in-band method
-of validating that a client's authority claims are valid. Therefore, a
-conforming server MUST confirm a client's authority claims using some
+Generally speaking, a listener or coalescing intermediary has no in-band method
+of validating that a dialer's authority claims are valid. Therefore, a
+conforming listener MUST confirm a dialer's authority claims using some
 out-of-band method: see {{authority-validation}} for more.
 
-A client MUST NOT send a CLIENT_AUTHORITY frame after the first. The
+A dialer MUST NOT send a CLIENT_AUTHORITY frame after the first one. The
 CLIENT_AUTHORITY frame is considered to be a complete list of authorities:
-therefore, a client MUST start a new connection if it would like to change the
+therefore, a dialer MUST start a new connection if it would like to change the
 list of authorities it claims.
 
 HTTP Changes
@@ -145,53 +164,74 @@ HTTP Changes
 From the perspective of other HTTP RFCs, such as RFC 7231 {{RFC7231}} and
 RFC 7540 {{RFC7540}}, this extension changes whether a peer is considered a
 'client' or a 'server' on a per-stream basis, instead of a per-connection
-basis, based on which peer opened the stream and how they did so. If a stream
-is initiated by a HEADERS frame, the peer that sent the HEADERS frame is
-considered the 'client' for the remainder of the lifetime of that stream, while
-the other peer is considered the 'server'.
+basis, based on which peer opened the stream and how they did so.
 
 The rest of the requirements of RFC 7231 {{RFC7231}} are preserved.
 
-Client Behavioral Changes
+### Client and Server    {#client-and-server}
+
+For the purpose of the rest of this document, 'client' and 'server' are defined
+on a per-stream basis. For a stream that is opened by means of a HEADERS frame,
+the peer that sent the initial headers frame is 'client' and the other peer is
+'server'. For a stream that is opened by means of a PUSH_PROMISE frame, the
+peer that sent the PUSH_PROMISE frame is 'server' and the other peer is
+'client'.
+
+### Stream IDs
+
+RFC 7540 {{RFC7540}} Section 5.1.1 applies restrictions on what stream IDs MUST
+be used by a given peer.
+
+This document amends that section to state that streams initiated by a dialer
+MUST use odd-numbered stream identifiers, and streams initiated by a listener
+MUST use even-numbered stream identifiers. This ensures that there will be
+no conflict when both peers are actively creating streams.
+
+The other limitations of RFC 7540 {{RFC7540}} Section 5.1.1 continue to apply.
+
+Dialer Behavioral Changes
 -------------------------
 
-When a client emits the SETTINGS_PEER_TO_PEER setting with a value of 1, it is
-informing the server that it is willing to accept HTTP requests from the
-server, allowing the server to open streams with HEADERS frames. This lifts
+When a dialer emits the SETTINGS_PEER_TO_PEER setting with a value of 1, it is
+informing the listener that it is willing to accept HTTP requests from the
+server, allowing the listener to open streams with HEADERS frames. This lifts
 some of the restrictions of RFC 7540 {{RFC7540}} Section 8.
 
-If a client has sent the SETTINGS_PEER_TO_PEER setting with a value of 1, the
-client MUST NOT reject an attempt by the server to change the value of
+If a dialer has sent the SETTINGS_PEER_TO_PEER setting with a value of 1, the
+dialer MUST NOT reject an attempt by the listener to change the value of
 SETTINGS_ENABLE_PUSH to 1.
 
-If the client, subsequent to sending SETTINGS_PEER_TO_PEER with value 1,
-receives from the server a value of SETTINGS_ENABLE_PUSH of 1, it MAY open
-streams by sending PUSH_PROMISE frames. The client MUST NOT send a
-PUSH_PROMISE frame on a stream that it opened by means of a HEADERS frame: only
-server-initiated streams may be used for sending PUSH_PROMISE frames. All other
-limitations about PUSH_PROMISE frames in RFC 7540 {{RFC7540}} continue to
-apply, except that the words 'server' and 'client' are defined on a per-stream
-basis.
+If the dialer, subsequent to sending SETTINGS_PEER_TO_PEER with value 1,
+receives from the listener a value of SETTINGS_ENABLE_PUSH of 1, it MAY open
+streams by sending PUSH_PROMISE frames.
 
-Server Behavioral Changes
--------------------------
+Listener Behavioral Changes
+---------------------------
 
-When a server receives the SETTINGS_PEER_TO_PEER setting from the client with
+When a listener receives the SETTINGS_PEER_TO_PEER setting from the dialer with
 a value of 1, it MAY at any point afterwards issue a non-zero value for
-SETTINGS_ENABLE_PUSH. This allows clients to open streams with PUSH_PROMISE
-and also lifts some of the restrictions of RFC 7540 {{RFC7540}} Section 8:
-specifically those sections that only allow servers to send PUSH_PROMISE
-frames, and only allow clients to receive them.
+SETTINGS_ENABLE_PUSH. This allows dialers to open streams with PUSH_PROMISE,
+subject to some limitations (see {{push-promise}}), and also lifts some of the
+restrictions of RFC 7540 {{RFC7540}} Section 8: specifically those sections
+that only allow listeners to send PUSH_PROMISE frames, and only allow dialers
+to receive them.
 
-If the client attempts to send a PUSH_PROMISE frame on a stream that was opened
-by the client (by sending a HEADERS frame), the server MUST treat this event as
-a connection error ({{RFC7540}} Section 5.4.1) of type PROTOCOL_ERROR.
-
-A HTTP/2 server, before sending SETTINGS_PEER_TO_PEER, must have
+A HTTP/2 listener, before sending SETTINGS_PEER_TO_PEER, must have
 SETTINGS_ENABLE_PUSH equal to 0, as per {{RFC7540}} Section 8.2. However, once
-a server has sent SETTINGS_PEER_TO_PEER, it MAY set SETTINGS_ENABLE_PUSH equal
-to 1. If it does not, it is assumed that SETTINGS_ENABLE_PUSH remains at 0,
-and the server is unwilling to accept pushed streams.
+a listener has sent SETTINGS_PEER_TO_PEER, it MAY set SETTINGS_ENABLE_PUSH
+equal to 1. If it does not, it is assumed that SETTINGS_ENABLE_PUSH remains at
+0, and the listener is unwilling to accept pushed streams.
+
+PUSH_PROMISE    {#push-promise}
+------------
+
+Whichever peer is client on a given stream MUST NOT send PUSH_PROMISE frames
+on that stream. All other limitations about PUSH_PROMISE frames in RFC 7540
+{{RFC7540}} continue to apply.
+
+If a peer attempts to send a PUSH_PROMISE frame on a stream in which it is the
+client, the peer that is server for that stream MUST treat this event as a
+connection error ({{RFC7540}} Section 5.4.1) of type PROTOCOL_ERROR.
 
 Other Extensions
 ----------------
@@ -208,23 +248,23 @@ SHOULD be considered clients and both peers should be considered servers.
 Authority Validation    {#authority-validation}
 ====================
 
-Generally speaking, a server or coalescing intermediary has no in-band method
-of validating that a client's authority claims are valid. Therefore, a
-conforming server MUST confirm a client's authority claims using some
+Generally speaking, a listener or coalescing intermediary has no in-band method
+of validating that a dialer's authority claims are valid. Therefore, a
+conforming listener MUST confirm a dialer's authority claims using some
 out-of-band method.
 
 This specification does not lay out in detail any proposed mechanism for doing
 this validation, as the best approach may vary from deployment to deployment.
 However, some options include:
 
-- validating authorities against a TLS certificate presented by the client
+- validating authorities against a TLS certificate presented by the dialer
   during TLS handshake.
-- confirming that a reverse DNS lookup for the client IP returns the authority
-  asserted by the client.
+- confirming that a reverse DNS lookup for the dialer IP returns the authority
+  asserted by the dialer.
 - a static list of IP addresses trusted for a given authority.
 
-The only requirement is that a server MUST implement some form of validation,
-and then MUST treat any attempt by a client to assert an authority that it
+The only requirement is that a listener MUST implement some form of validation,
+and then MUST treat any attempt by a dialer to assert an authority that it
 cannot validate as a connection error ({{RFC7540}} Section 5.4.1) of type
 PROTOCOL_ERROR.
 
