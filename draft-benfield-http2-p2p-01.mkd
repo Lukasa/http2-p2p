@@ -312,6 +312,14 @@ Changelog
 
 (This appendix to be deleted by the RFC Editor.)
 
+Since -01:
+
+- Introduce the terms 'dialer' and 'listener'.
+- Clarify the terms 'client' and 'server'.
+- Clarify what stream IDs are used by which peer.
+- Remove the ability to send multiple CLIENT_AUTHORITY frames.
+- Correctly credit David Dias and Juan Benet for their role.
+
 Since -00:
 
 - Clarified the semantics behind multiple CLIENT_AUTHORITY frames.
