@@ -9,7 +9,7 @@ Expires: January 27, 2016
 
 
                     Peer-to-peer Extension to HTTP/2
-                      draft-benfield-http2-p2p-01
+                      draft-benfield-http2-p2p-02
 
 Abstract
 
@@ -62,25 +62,29 @@ Table of Contents
 
    1.  Introduction  . . . . . . . . . . . . . . . . . . . . . . . .   2
      1.1.  Notational Conventions  . . . . . . . . . . . . . . . . .   3
+     1.2.  Terminology . . . . . . . . . . . . . . . . . . . . . . .   3
    2.  Additions to HTTP/2 . . . . . . . . . . . . . . . . . . . . .   3
      2.1.  SETTINGS_PEER_TO_PEER Setting . . . . . . . . . . . . . .   3
-     2.2.  CLIENT_AUTHORITY Frame  . . . . . . . . . . . . . . . . .   3
+     2.2.  CLIENT_AUTHORITY Frame  . . . . . . . . . . . . . . . . .   4
        2.2.1.  Payload . . . . . . . . . . . . . . . . . . . . . . .   4
        2.2.2.  Semantics . . . . . . . . . . . . . . . . . . . . . .   4
-     2.3.  HTTP Changes  . . . . . . . . . . . . . . . . . . . . . .   4
-     2.4.  Client Behavioral Changes . . . . . . . . . . . . . . . .   5
-     2.5.  Server Behavioral Changes . . . . . . . . . . . . . . . .   5
-     2.6.  Other Extensions  . . . . . . . . . . . . . . . . . . . .   5
+     2.3.  HTTP Changes  . . . . . . . . . . . . . . . . . . . . . .   5
+       2.3.1.  Client and Server . . . . . . . . . . . . . . . . . .   5
+       2.3.2.  Stream IDs  . . . . . . . . . . . . . . . . . . . . .   5
+     2.4.  Dialer Behavioral Changes . . . . . . . . . . . . . . . .   5
+     2.5.  Listener Behavioral Changes . . . . . . . . . . . . . . .   6
+     2.6.  PUSH_PROMISE  . . . . . . . . . . . . . . . . . . . . . .   6
+     2.7.  Other Extensions  . . . . . . . . . . . . . . . . . . . .   6
    3.  Authority Validation  . . . . . . . . . . . . . . . . . . . .   6
-   4.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .   6
-     4.1.  HTTP/2 Frame Type Registry Update . . . . . . . . . . . .   6
-     4.2.  HTTP/2 Settings Registry Update . . . . . . . . . . . . .   6
+   4.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .   7
+     4.1.  HTTP/2 Frame Type Registry Update . . . . . . . . . . . .   7
+     4.2.  HTTP/2 Settings Registry Update . . . . . . . . . . . . .   7
    5.  Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .   7
-   6.  References  . . . . . . . . . . . . . . . . . . . . . . . . .   7
-     6.1.  Normative References  . . . . . . . . . . . . . . . . . .   7
-     6.2.  Informative References  . . . . . . . . . . . . . . . . .   7
+   6.  References  . . . . . . . . . . . . . . . . . . . . . . . . .   8
+     6.1.  Normative References  . . . . . . . . . . . . . . . . . .   8
+     6.2.  Informative References  . . . . . . . . . . . . . . . . .   8
    Appendix A.  Changelog  . . . . . . . . . . . . . . . . . . . . .   8
-   Author's Address  . . . . . . . . . . . . . . . . . . . . . . . .   8
+   Author's Address  . . . . . . . . . . . . . . . . . . . . . . . .   9
 
 1.  Introduction
 
@@ -102,10 +106,6 @@ Table of Contents
    The principle of this extension is similar to the Reverse HTTP
    [I-D.lentczner-rhttp] proposal made in 2009.  HTTP/2's framing makes
    this a substantially more flexible extension than Reverse HTTP by
-   allowing the client and server to vary on a per-stream basis, rather
-   than affecting the whole connection.
-
-
 
 
 
@@ -114,22 +114,40 @@ Benfield                Expires January 27, 2016                [Page 2]
 Internet-Draft                  HTTP2-P2P                      July 2015
 
 
+   allowing the client and server to vary on a per-stream basis, rather
+   than affecting the whole connection.
+
 1.1.  Notational Conventions
 
    The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
    "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this
    document are to be interpreted as described in RFC 2119 [RFC2119].
 
+1.2.  Terminology
+
+   The nature of this specification is that which peer is a 'client' and
+   which is a 'server' changes from stream-to-stream.  Therefore, the
+   terms 'listener' and 'dialer' are introduced to unambiguously refer
+   to peers.
+
+   The 'dialer', or dialing peer, is the peer that initiated the HTTP/2
+   connection.  In a standard, non-peer-to-peer HTTP/2 transaction, the
+   'dialer' and the 'client' are the same.
+
+   The 'listener', or listening peer, is the peer that accepted the
+   HTTP/2 connection.  In a standard, non-peer-to-peer HTTP/2
+   transaction, the 'listener' and the 'server' are the same.
+
+   'Client' and 'server' are defined on a per-stream basis, following
+   the rules in Section 2.3.1.
+
 2.  Additions to HTTP/2
 
    This document introduces a new HTTP/2 setting ([RFC7540],
    Section 11.3) and a new HTTP/2 frame type ([RFC7540], Section 11.2),
-   to allow for a HTTP/2 client to advertise its support for receiving
-   server-initiated streams, and to allow a server to advertise its
+   to allow for a HTTP/2 dialer to advertise its support for receiving
+   server-initiated streams, and to allow a listener to advertise its
    support for receiving client-initiated pushed streams.
-
-   The setting, SETTINGS_PEER_TO_PEER, is a negotiated setting
-   ([RFC7540], Section 5.5).
 
 2.1.  SETTINGS_PEER_TO_PEER Setting
 
@@ -142,26 +160,8 @@ Internet-Draft                  HTTP2-P2P                      July 2015
       supported.  Any other value, or the absence of this setting,
       indicates that the peer-to-peer extension is not supported.
 
-      This setting MUST NOT be emitted by the server on the HTTP/2
-      connection.  If the client receives this setting from the server
-      it MUST respond with a connection error ([RFC7540] Section 5.4.1)
-      of type PROTOCOL_ERROR.
-
-2.2.  CLIENT_AUTHORITY Frame
-
-   This document introduces the CLIENT_AUTHORITY frame.  This frame MUST
-   be emitted by a client after it sends a value of
-   SETTINGS_PEER_TO_PEER of 1, and MAY be emitted by a client any time
-   after.  The purpose of this frame is to allow a client to advertise
-   the authority or authorities for which it is prepared to accept
-   requests.
-
-   This frame always applies to a whole connection.  Therefore, the
-   stream identifier for CLIENT_AUTHORITY frames MUST be 0.  If a server
-   receives a CLIENT_AUTHORITY frame whose stream identifier field is
-   anything other than 0, it MUST respond with a connection error
-   ([RFC7540] Section 5.4.1) of type PROTOCOL_ERROR.
-
+      This setting MUST NOT be emitted by the listener on the HTTP/2
+      connection.  If the dialer receives this setting from the listener
 
 
 
@@ -169,6 +169,24 @@ Benfield                Expires January 27, 2016                [Page 3]
 
 Internet-Draft                  HTTP2-P2P                      July 2015
 
+
+      it MUST respond with a connection error ([RFC7540] Section 5.4.1)
+      of type PROTOCOL_ERROR.
+
+2.2.  CLIENT_AUTHORITY Frame
+
+   This document introduces the CLIENT_AUTHORITY frame.  This frame MUST
+   be emitted by a dialer after it sends a value of
+   SETTINGS_PEER_TO_PEER of 1, and MUST NOT be emitted by a dialer any
+   time after.  The purpose of this frame is to allow a dialer to
+   advertise the authority or authorities for which it is prepared to
+   accept requests.
+
+   This frame always applies to a whole connection.  Therefore, the
+   stream identifier for CLIENT_AUTHORITY frames MUST be 0.  If a
+   listener receives a CLIENT_AUTHORITY frame whose stream identifier
+   field is anything other than 0, it MUST respond with a connection
+   error ([RFC7540] Section 5.4.1) of type PROTOCOL_ERROR.
 
 2.2.1.  Payload
 
@@ -186,38 +204,20 @@ Internet-Draft                  HTTP2-P2P                      July 2015
    Each segment begins with a one-byte field indicating the length of
    the authority string the client is asserting.  That field is then
    followed by a single authority field.  The authority MUST be sent in
-   whatever character encoding is going to be expected by the client on
+   whatever character encoding is going to be expected by the dialer on
    receipt of the :authority pseudo-header field.
 
 2.2.2.  Semantics
 
-   Generally speaking, a server or coalescing intermediary has no in-
-   band method of validating that a client's authority claims are valid.
-   Therefore, a conforming server MUST confirm a client's authority
+   Generally speaking, a listener or coalescing intermediary has no in-
+   band method of validating that a dialer's authority claims are valid.
+   Therefore, a conforming listener MUST confirm a dialer's authority
    claims using some out-of-band method: see Section 3 for more.
 
-   A client MAY send a CLIENT_AUTHORITY frame at any time after the
-   HTTP/2 preamble is complete.  Each CLIENT_AUTHORITY frame is
-   considered to be a complete list of authorities: therefore, a server
-   MUST disregard all prior CLIENT_AUTHORITY frames when a new one is
-   received.  Also, servers MUST validate the asserted authorities for
-   all CLIENT_AUTHORITY frames, not just the first one.
-
-2.3.  HTTP Changes
-
-   From the perspective of other HTTP RFCs, such as RFC 7231 [RFC7231]
-   and RFC 7540 [RFC7540], this extension changes whether a peer is
-   considered a 'client' or a 'server' on a per-stream basis, instead of
-   a per-connection basis, based on which peer opened the stream and how
-   they did so.  If a stream is initiated by a HEADERS frame, the peer
-   that sent the HEADERS frame is considered the 'client' for the
-   remainder of the lifetime of that stream, while the other peer is
-   considered the 'server'.
-
-   Otherwise, the new definition of 'client' and 'server' is preserved
-   for the purposes of the PUSH_PROMISE frame ([RFC7540], Section 6.6).
-   As a result, whichever peer is considered the 'server' for a given
-   stream can push other streams to the 'client' peer.
+   A dialer MUST NOT send a CLIENT_AUTHORITY frame after the first one.
+   The CLIENT_AUTHORITY frame is considered to be a complete list of
+   authorities: therefore, a dialer MUST start a new connection if it
+   would like to change the list of authorities it claims.
 
 
 
@@ -226,54 +226,54 @@ Benfield                Expires January 27, 2016                [Page 4]
 Internet-Draft                  HTTP2-P2P                      July 2015
 
 
+2.3.  HTTP Changes
+
+   From the perspective of other HTTP RFCs, such as RFC 7231 [RFC7231]
+   and RFC 7540 [RFC7540], this extension changes whether a peer is
+   considered a 'client' or a 'server' on a per-stream basis, instead of
+   a per-connection basis, based on which peer opened the stream and how
+   they did so.
+
    The rest of the requirements of RFC 7231 [RFC7231] are preserved.
 
-2.4.  Client Behavioral Changes
+2.3.1.  Client and Server
 
-   When a client emits the SETTINGS_PEER_TO_PEER setting with a value of
-   1, it is informing the server that it is willing to accept HTTP
-   requests from the server, allowing the server to open streams with
+   For the purpose of the rest of this document, 'client' and 'server'
+   are defined on a per-stream basis.  For a stream that is opened by
+   means of a HEADERS frame, the peer that sent the initial headers
+   frame is 'client' and the other peer is 'server'.  For a stream that
+   is opened by means of a PUSH_PROMISE frame, the peer that sent the
+   PUSH_PROMISE frame is 'server' and the other peer is 'client'.
+
+2.3.2.  Stream IDs
+
+   RFC 7540 [RFC7540] Section 5.1.1 applies restrictions on what stream
+   IDs MUST be used by a given peer.
+
+   This document amends that section to state that streams initiated by
+   a dialer MUST use odd-numbered stream identifiers, and streams
+   initiated by a listener MUST use even-numbered stream identifiers.
+   This ensures that there will be no conflict when both peers are
+   actively creating streams.
+
+   The other limitations of RFC 7540 [RFC7540] Section 5.1.1 continue to
+   apply.
+
+2.4.  Dialer Behavioral Changes
+
+   When a dialer emits the SETTINGS_PEER_TO_PEER setting with a value of
+   1, it is informing the listener that it is willing to accept HTTP
+   requests from the server, allowing the listener to open streams with
    HEADERS frames.  This lifts some of the restrictions of RFC 7540
    [RFC7540] Section 8.
 
-   If a client has sent the SETTINGS_PEER_TO_PEER setting with a value
-   of 1, the client MUST NOT reject an attempt by the server to change
+   If a dialer has sent the SETTINGS_PEER_TO_PEER setting with a value
+   of 1, the dialer MUST NOT reject an attempt by the listener to change
    the value of SETTINGS_ENABLE_PUSH to 1.
 
-   If the client, subsequent to sending SETTINGS_PEER_TO_PEER with value
-   1, receives from the server a value of SETTINGS_ENABLE_PUSH of 1, it
-   MAY open streams by sending PUSH_PROMISE frames.  The client MUST NOT
-   send a PUSH_PROMISE frame on a stream that it opened by means of a
-   HEADERS frame: only server-initiated streams may be used for sending
-   PUSH_PROMISE frames.  All other limitations about PUSH_PROMISE frames
-   in RFC 7540 [RFC7540] continue to apply, except that the words
-   'server' and 'client' are defined on a per-stream basis.
-
-2.5.  Server Behavioral Changes
-
-   When a server receives the SETTINGS_PEER_TO_PEER setting from the
-   client with a value of 1, it MAY at any point afterwards issue a non-
-   zero value for SETTINGS_ENABLE_PUSH.  This allows clients to open
-   streams with PUSH_PROMISE and also lifts some of the restrictions of
-   RFC 7540 [RFC7540] Section 8: specifically those sections that only
-   allow servers to send PUSH_PROMISE frames, and only allow clients to
-   receive them.
-
-   If the client attempts to send a PUSH_PROMISE frame on a stream that
-   was opened by the client (by sending a HEADERS frame), the server
-   MUST treat this event as a connection error ([RFC7540] Section 5.4.1)
-   of type PROTOCOL_ERROR.
-
-2.6.  Other Extensions
-
-   When this extension is deployed with other extensions to HTTP/2, the
-   behaviour of this extension does not change.  All other extensions
-   that refer to 'client' or 'server' SHOULD be treated as though those
-   terms apply on a per-stream basis.
-
-   If other extensions apply 'server' or 'client' to the whole
-   connection (e.g.  for settings in SETTINGS frames, which are sent on
-
+   If the dialer, subsequent to sending SETTINGS_PEER_TO_PEER with value
+   1, receives from the listener a value of SETTINGS_ENABLE_PUSH of 1,
+   it MAY open streams by sending PUSH_PROMISE frames.
 
 
 
@@ -282,30 +282,76 @@ Benfield                Expires January 27, 2016                [Page 5]
 Internet-Draft                  HTTP2-P2P                      July 2015
 
 
+2.5.  Listener Behavioral Changes
+
+   When a listener receives the SETTINGS_PEER_TO_PEER setting from the
+   dialer with a value of 1, it MAY at any point afterwards issue a non-
+   zero value for SETTINGS_ENABLE_PUSH.  This allows dialers to open
+   streams with PUSH_PROMISE, subject to some limitations (see
+   Section 2.6), and also lifts some of the restrictions of RFC 7540
+   [RFC7540] Section 8: specifically those sections that only allow
+   listeners to send PUSH_PROMISE frames, and only allow dialers to
+   receive them.
+
+   A HTTP/2 listener, before receiving SETTINGS_PEER_TO_PEER, must have
+   SETTINGS_ENABLE_PUSH equal to 0, as per [RFC7540] Section 8.2.
+   However, once a listener has received SETTINGS_PEER_TO_PEER, it MAY
+   set SETTINGS_ENABLE_PUSH equal to 1.  If it does not, it is assumed
+   that SETTINGS_ENABLE_PUSH remains at 0, and the listener is unwilling
+   to accept pushed streams.
+
+2.6.  PUSH_PROMISE
+
+   Whichever peer is client on a given stream MUST NOT send PUSH_PROMISE
+   frames on that stream.  All other limitations about PUSH_PROMISE
+   frames in RFC 7540 [RFC7540] continue to apply.
+
+   If a peer attempts to send a PUSH_PROMISE frame on a stream in which
+   it is the client, the peer that is server for that stream MUST treat
+   this event as a connection error ([RFC7540] Section 5.4.1) of type
+   PROTOCOL_ERROR.
+
+2.7.  Other Extensions
+
+   When this extension is deployed with other extensions to HTTP/2, the
+   behaviour of this extension does not change.  All other extensions
+   that refer to 'client' or 'server' SHOULD be treated as though those
+   terms apply on a per-stream basis.
+
+   If other extensions apply 'server' or 'client' to the whole
+   connection (e.g.  for settings in SETTINGS frames, which are sent on
    stream 0), then both peers SHOULD be considered clients and both
    peers should be considered servers.
 
 3.  Authority Validation
 
-   Generally speaking, a server or coalescing intermediary has no in-
-   band method of validating that a client's authority claims are valid.
-   Therefore, a conforming server MUST confirm a client's authority
+   Generally speaking, a listener or coalescing intermediary has no in-
+   band method of validating that a dialer's authority claims are valid.
+   Therefore, a conforming listener MUST confirm a dialer's authority
    claims using some out-of-band method.
+
+
+
+
+Benfield                Expires January 27, 2016                [Page 6]
+
+Internet-Draft                  HTTP2-P2P                      July 2015
+
 
    This specification does not lay out in detail any proposed mechanism
    for doing this validation, as the best approach may vary from
    deployment to deployment.  However, some options include:
 
    o  validating authorities against a TLS certificate presented by the
-      client during TLS handshake.
+      dialer during TLS handshake.
 
-   o  confirming that a reverse DNS lookup for the client IP returns the
-      authority asserted by the client.
+   o  confirming that a reverse DNS lookup for the dialer IP returns the
+      authority asserted by the dialer.
 
    o  a static list of IP addresses trusted for a given authority.
 
-   The only requirement is that a server MUST implement some form of
-   validation, and then MUST treat any attempt by a client to assert an
+   The only requirement is that a listener MUST implement some form of
+   validation, and then MUST treat any attempt by a dialer to assert an
    authority that it cannot validate as a connection error ([RFC7540]
    Section 5.4.1) of type PROTOCOL_ERROR.
 
@@ -329,15 +375,6 @@ Internet-Draft                  HTTP2-P2P                      July 2015
    Section 11.4).  The entries in the following table are registered by
    this document.
 
-
-
-
-
-Benfield                Expires January 27, 2016                [Page 6]
-
-Internet-Draft                  HTTP2-P2P                      July 2015
-
-
            +--------------+------+---------------+-------------+
            | Name         | Code | Initial Value | Section     |
            +--------------+------+---------------+-------------+
@@ -346,8 +383,16 @@ Internet-Draft                  HTTP2-P2P                      July 2015
 
 5.  Acknowledgements
 
-   Thanks to Fedor Indutny for the original idea, and Amos Jeffries,
-   Mike Bishop, and Ilari Liusvaara for their follow-up.
+   Thanks to David Dias, Juan Benet, and Fedor Indutny for the original
+   idea, and Amos Jeffries, Mike Bishop, and Ilari Liusvaara for their
+   follow-up.
+
+
+
+Benfield                Expires January 27, 2016                [Page 7]
+
+Internet-Draft                  HTTP2-P2P                      July 2015
+
 
    Thanks also to Tyrel Souza, Donald Stufft, and Paul Kehrer for
    proofreading.
@@ -383,20 +428,29 @@ Internet-Draft                  HTTP2-P2P                      July 2015
               Lentczner, M. and D. Preston, "Reverse HTTP", draft-
               lentczner-rhttp-00 (work in progress), March 2009.
 
+Appendix A.  Changelog
+
+   (This appendix to be deleted by the RFC Editor.)
+
+   Since -01:
+
+   o  Introduce the terms 'dialer' and 'listener'.
+
+   o  Clarify the terms 'client' and 'server'.
+
+   o  Clarify what stream IDs are used by which peer.
+
+   o  Remove the ability to send multiple CLIENT_AUTHORITY frames.
 
 
 
 
-
-
-Benfield                Expires January 27, 2016                [Page 7]
+Benfield                Expires January 27, 2016                [Page 8]
 
 Internet-Draft                  HTTP2-P2P                      July 2015
 
 
-Appendix A.  Changelog
-
-   (This appendix to be deleted by the RFC Editor.)
+   o  Correctly credit David Dias and Juan Benet for their role.
 
    Since -00:
 
@@ -445,4 +499,6 @@ Author's Address
 
 
 
-Benfield                Expires January 27, 2016                [Page 8]
+
+
+Benfield                Expires January 27, 2016                [Page 9]

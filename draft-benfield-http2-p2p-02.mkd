@@ -1,7 +1,7 @@
 ---
 title: Peer-to-peer Extension to HTTP/2
 abbrev: HTTP2-P2P
-docname: draft-benfield-http2-p2p-01
+docname: draft-benfield-http2-p2p-02
 date: 2015-07-26
 category: std
 
@@ -93,9 +93,6 @@ to advertise its support for receiving server-initiated streams, and to allow a
 listener to advertise its support for receiving client-initiated pushed
 streams.
 
-The setting, SETTINGS_PEER_TO_PEER, is a negotiated setting ({{RFC7540}},
-Section 5.5).
-
 SETTINGS_PEER_TO_PEER Setting    {#p2p-setting}
 -----------------------------
 
@@ -106,8 +103,8 @@ The following new SETTINGS parameters ({{RFC7540}}, Section 6.5.2) are defined:
   that the peer-to-peer extension is supported. Any other value, or the absence
   of this setting, indicates that the peer-to-peer extension is not supported.
 
-  This setting MUST NOT be emitted by the server on the HTTP/2 connection. If
-  the dialer receives this setting from the server it MUST respond with a
+  This setting MUST NOT be emitted by the listener on the HTTP/2 connection. If
+  the dialer receives this setting from the listener it MUST respond with a
   connection error ({{RFC7540}} Section 5.4.1) of type PROTOCOL_ERROR.
 
 CLIENT_AUTHORITY Frame    {#client-authority-frame}
@@ -216,9 +213,9 @@ restrictions of RFC 7540 {{RFC7540}} Section 8: specifically those sections
 that only allow listeners to send PUSH_PROMISE frames, and only allow dialers
 to receive them.
 
-A HTTP/2 listener, before sending SETTINGS_PEER_TO_PEER, must have
+A HTTP/2 listener, before receiving SETTINGS_PEER_TO_PEER, must have
 SETTINGS_ENABLE_PUSH equal to 0, as per {{RFC7540}} Section 8.2. However, once
-a listener has sent SETTINGS_PEER_TO_PEER, it MAY set SETTINGS_ENABLE_PUSH
+a listener has received SETTINGS_PEER_TO_PEER, it MAY set SETTINGS_ENABLE_PUSH
 equal to 1. If it does not, it is assumed that SETTINGS_ENABLE_PUSH remains at
 0, and the listener is unwilling to accept pushed streams.
 
