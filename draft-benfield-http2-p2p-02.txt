@@ -3,9 +3,9 @@
 
 
 Hypertext Transfer Protocol Working Group                    C. Benfield
-Internet-Draft                                             July 26, 2015
+Internet-Draft                                          October 09, 2015
 Intended status: Standards Track
-Expires: January 27, 2016
+Expires: April 11, 2016
 
 
                     Peer-to-peer Extension to HTTP/2
@@ -32,7 +32,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on January 27, 2016.
+   This Internet-Draft will expire on April 11, 2016.
 
 Copyright Notice
 
@@ -53,9 +53,9 @@ Copyright Notice
 
 
 
-Benfield                Expires January 27, 2016                [Page 1]
+Benfield                 Expires April 11, 2016                 [Page 1]
 
-Internet-Draft                  HTTP2-P2P                      July 2015
+Internet-Draft                  HTTP2-P2P                   October 2015
 
 
 Table of Contents
@@ -109,9 +109,9 @@ Table of Contents
 
 
 
-Benfield                Expires January 27, 2016                [Page 2]
+Benfield                 Expires April 11, 2016                 [Page 2]
 
-Internet-Draft                  HTTP2-P2P                      July 2015
+Internet-Draft                  HTTP2-P2P                   October 2015
 
 
    allowing the client and server to vary on a per-stream basis, rather
@@ -165,9 +165,9 @@ Internet-Draft                  HTTP2-P2P                      July 2015
 
 
 
-Benfield                Expires January 27, 2016                [Page 3]
+Benfield                 Expires April 11, 2016                 [Page 3]
 
-Internet-Draft                  HTTP2-P2P                      July 2015
+Internet-Draft                  HTTP2-P2P                   October 2015
 
 
       it MUST respond with a connection error ([RFC7540] Section 5.4.1)
@@ -221,9 +221,9 @@ Internet-Draft                  HTTP2-P2P                      July 2015
 
 
 
-Benfield                Expires January 27, 2016                [Page 4]
+Benfield                 Expires April 11, 2016                 [Page 4]
 
-Internet-Draft                  HTTP2-P2P                      July 2015
+Internet-Draft                  HTTP2-P2P                   October 2015
 
 
 2.3.  HTTP Changes
@@ -277,9 +277,9 @@ Internet-Draft                  HTTP2-P2P                      July 2015
 
 
 
-Benfield                Expires January 27, 2016                [Page 5]
+Benfield                 Expires April 11, 2016                 [Page 5]
 
-Internet-Draft                  HTTP2-P2P                      July 2015
+Internet-Draft                  HTTP2-P2P                   October 2015
 
 
 2.5.  Listener Behavioral Changes
@@ -333,9 +333,9 @@ Internet-Draft                  HTTP2-P2P                      July 2015
 
 
 
-Benfield                Expires January 27, 2016                [Page 6]
+Benfield                 Expires April 11, 2016                 [Page 6]
 
-Internet-Draft                  HTTP2-P2P                      July 2015
+Internet-Draft                  HTTP2-P2P                   October 2015
 
 
    This specification does not lay out in detail any proposed mechanism
@@ -389,9 +389,9 @@ Internet-Draft                  HTTP2-P2P                      July 2015
 
 
 
-Benfield                Expires January 27, 2016                [Page 7]
+Benfield                 Expires April 11, 2016                 [Page 7]
 
-Internet-Draft                  HTTP2-P2P                      July 2015
+Internet-Draft                  HTTP2-P2P                   October 2015
 
 
    Thanks also to Tyrel Souza, Donald Stufft, and Paul Kehrer for
@@ -445,9 +445,9 @@ Appendix A.  Changelog
 
 
 
-Benfield                Expires January 27, 2016                [Page 8]
+Benfield                 Expires April 11, 2016                 [Page 8]
 
-Internet-Draft                  HTTP2-P2P                      July 2015
+Internet-Draft                  HTTP2-P2P                   October 2015
 
 
    o  Correctly credit David Dias and Juan Benet for their role.
@@ -501,4 +501,4 @@ Author's Address
 
 
 
-Benfield                Expires January 27, 2016                [Page 9]
+Benfield                 Expires April 11, 2016                 [Page 9]
